@@ -1,0 +1,41 @@
+{
+  "type": "record",
+  "name": "Fsa",
+  "namespace": "com.flipp.fadmin",
+  "fields": [
+    {
+      "name": "label",
+      "type": "string",
+      "doc": "This field is used as the key."
+    },
+    {
+      "name": "latitude",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "name": "longitude",
+      "type":  "float",
+      "default": 0.0
+    },
+    {
+      "name": "message_id",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "created_at",
+      "type": "long"
+    },
+    {
+      "name": "updated_at",
+      "type": "long"
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "default": "",
+      "doc": "ISO 8601 datetime. Format: YYYY-MM-DD HH:MM:SS z"
+    }
+  ]
+}

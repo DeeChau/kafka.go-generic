@@ -1,0 +1,81 @@
+{
+  "type": "record",
+  "name": "PostalCode",
+  "namespace": "com.flipp.fadmin",
+  "fields": [
+    {
+      "name": "postal_code",
+      "type": "string",
+      "doc": "This field is used as the key."
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "default": true,
+      "doc": "Indicates if this PostalCode is actively updated."
+    },
+    {
+      "name": "city",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "The primary city this PostalCode belongs to. Can be null in the case of legacy data."
+    },
+    {
+      "name": "province",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "The two letter abbreviation for the provinces name. Can be null in the case of legacy data. Eg. Ontario -> ON."
+    },
+    {
+      "name": "metro_id",
+      "type": ["null", "int"],
+      "default": null,
+      "doc": "The metro_id for the PostalCode, joins with CanadianMetro."
+    },
+    {
+      "name": "density_class",
+      "type": {
+        "type": "enum",
+        "name": "DensityClass",
+        "symbols" : ["RURAL", "SUBURBAN", "URBAN", "FlippAvroDefault"]
+      },
+      "doc": "Population Density classes.",
+      "default": "FlippAvroDefault"
+    },
+    {
+      "name": "fsa",
+      "type": "string",
+      "default": "FlippAvroDefault",
+      "doc": "The first three digits of the PostalCode. This is 3 digits long. Eg. M8X 2X9 -> M8X"
+    },
+    {
+      "name": "latitude",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "name": "longitude",
+      "type": "float",
+      "default": 0.0
+    },
+    {
+      "name": "created_at",
+      "type": "long"
+    },
+    {
+      "name": "updated_at",
+      "type": "long"
+    },
+    {
+      "name": "message_id",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "default": "",
+      "doc": "ISO 8601 datetime. Format: YYYY-MM-DD HH:MM:SS z"
+    }
+  ]
+}

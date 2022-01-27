@@ -1,0 +1,38 @@
+{
+  "type": "record",
+  "name": "CanadianMetro",
+  "namespace": "com.flipp.fadmin",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long",
+      "doc": "An id for Canadian Postal Code Metros, used for joins on PostalCode.metro_id. This field is used as the key."
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "The name of the Canadian Postal Code Metros."
+    },
+    {
+      "name": "metro_type",
+      "type": {
+        "type": "enum",
+        "name": "DensityClass",
+        "symbols" : ["CMA", "CA", "Rural", "FlippAvroDefault"]
+      },
+      "doc": "The type for the Canadian Postal Code Metro.",
+      "default": "FlippAvroDefault"
+    },
+    {
+      "name": "message_id",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "timestamp",
+      "type": "string",
+      "default": "",
+      "doc": "ISO 8601 datetime. Format: YYYY-MM-DD HH:MM:SS z"
+    }
+  ]
+}
