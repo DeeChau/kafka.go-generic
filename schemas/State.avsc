@@ -14,12 +14,6 @@
       "doc": "The full name of the State."
     },
     {
-      "name": "sub_region",
-      "type": ["null", "string"],
-      "default": null,
-      "doc": "The geographical sub-region that this state belongs to."
-    },
-    {
       "name": "message_id",
       "type": "string",
       "default": ""

@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "StateKey",
+  "namespace": "com.flipp.fadmin",
+  "fields": [
+    {
+      "name": "abbreviation",
+      "type": "string",
+      "doc": "A two character identifier for the states name. This field is used as the key."
+    }
+  ]
+}
