@@ -1,4 +1,4 @@
-module kafka.go-generic
+module github.com/DeeChau/kafka.go-generic
 
 go 1.18
 
