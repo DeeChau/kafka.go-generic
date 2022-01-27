@@ -1,4 +1,4 @@
-module hackathon/generic-kafka
+module kafka.go-generic
 
 go 1.18
 
