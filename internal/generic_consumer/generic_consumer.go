@@ -12,8 +12,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"github.com/wishabi/kafka.go/avro"
 
-	schema "github.com/DeeChau/kafka.go-generic/internal/schema"
-	genericschema "github.com/DeeChau/kafka.go-generic/internal/genericschema"
+	genericschema "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
 )
 
 // This likely can be shared. It is just an avro consumer.
@@ -55,7 +54,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 
 
 		log.Printf("Registry found schema: %s", valueSchema)
-		value, err = genericschemaDeserializeFromSchema[V, PTV](bytes.NewReader(valueData), valueSchema)
+		value, err = genericschema.DeserializeFromSchema[V, PTV](bytes.NewReader(valueData), valueSchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka  message: %w", err)
 		}
@@ -78,7 +77,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 		keySchema, err := registry.Schema(keySchemaID)
 
 		// Flag
-		key, err = genericschemaDeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
+		key, err = genericschema.DeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka Key message: %w", err)
 		}		
@@ -132,7 +131,7 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 }
 
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
-func NewAvroConsumer[K, V genericschemaAvroSchemaConstraint, PTK genericschemaAvroSchemaStruct[K], PTV genericschemaAvroSchemaStruct[V]](
+func NewAvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 		config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
 	return &AvroConsumer[K, V, PTK, PTV]{
 		reader:   kafka.NewReader(config),

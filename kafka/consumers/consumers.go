@@ -21,3 +21,16 @@ func GetFsaConsumer(schemaRegistry *avro.Registry, dialer *kafka.Dialer, kafkaBr
 	}, schemaRegistry)
 	return fsaConsumer
 }
+
+func GetStateConsumer(schemaRegistry *avro.Registry, dialer *kafka.Dialer, kafkaBrokerUrl string) *consumers.AvroStateConsumer {
+	var stateConsumer = consumers.NewAvroStateConsumer(kafka.ReaderConfig{
+		Topic:       "Fsa",
+		GroupID:     "TestStateConsumer",
+		Dialer:      dialer,
+		StartOffset: kafka.LastOffset,
+		Brokers: []string{
+			kafkaBrokerUrl,
+		},
+	}, schemaRegistry)
+	return stateConsumer
+}

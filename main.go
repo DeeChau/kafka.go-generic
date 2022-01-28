@@ -9,9 +9,8 @@ import (
 
 	"github.com/DeeChau/kafka.go-generic/internal/schema"
 	"github.com/DeeChau/kafka.go-generic/internal/generic_consumer"
-	// "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
+	genericschema "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
 
-	// schema "github.com/DeeChau/kafka.go-generic/internal/schema"
 	"github.com/DeeChau/kafka.go-generic/kafka/consumers"
 	"github.com/DeeChau/kafka.go-generic/kafka/producers"
 	"github.com/rs/zerolog"
@@ -38,7 +37,7 @@ func main() {
 
 // Using generics
 func consumeWithGenerics() (bool, error) {
-	fmt.Println("---Using Generic Kafka Consumers/Producers---")
+	fmt.Println("---Using Generic Kafka Consumers---")
 	// Begin Kafka code here
 	dialer, dialerErr := kafkaUtil.Dialer()
 
@@ -51,10 +50,11 @@ func consumeWithGenerics() (bool, error) {
 
 
 	// fsa Consumer code
+	fmt.Println("---Using Generic Kafka Consumers for Fsas---")
 	fsaConsumer := genericconsumers.NewAvroConsumer[schema.FsaKey, schema.Fsa](
 		kafka.ReaderConfig{
 			Topic:       "Fsa",
-			GroupID:     "TestFsaConsumerGenerics",
+			GroupID:     "TestConsumerGenerics",
 			Dialer:      dialer,
 			Brokers: env.BrokersList,
 	}, schemaRegistry)
@@ -73,10 +73,11 @@ func consumeWithGenerics() (bool, error) {
 	log.Info().Msgf("Fsa -- Kafka: Received Key %v, Message %v from", fsaKey, fsaValue)
 
 	// State Consumer code
+	fmt.Println("---Using Generic Consumers for States---")
 	stateConsumer := genericconsumers.NewAvroConsumer[schema.StateKey, schema.State](
 		kafka.ReaderConfig{
 			Topic:       "State",
-			GroupID:     "TestFsaConsumerGenerics",
+			GroupID:     "TestConsumerGenerics",
 			Dialer:      dialer,
 			Brokers: env.BrokersList,
 	}, schemaRegistry)
@@ -128,12 +129,12 @@ func experimentWithGenerics() {
 // With this pattern, we can use this as a building block to define constraints on what a Avro Key or Value should be
 // - and have it generated to redude duplication of code.
 // "Hack"(?) that allows us to call methods
-func printAvroKey[K any, PT schema.AvroSchemaStruct[K]](key K) {
+func printAvroKey[K any, PT genericschema.AvroSchemaStruct[K]](key K) {
 	fmt.Printf("%T Key: %v\n", key, key)
 	fmt.Printf("Key Schema: %s\n\n", PT(&key).Schema())
 }
 
-func printAvroValue[V any, PT schema.AvroSchemaStruct[V]](value V) {
+func printAvroValue[V any, PT genericschema.AvroSchemaStruct[V]](value V) {
 	fmt.Printf("%T Value %v\n", value, value)
 	fmt.Printf("Value Schema: %s\n\n", PT(&value).Schema())
 }
