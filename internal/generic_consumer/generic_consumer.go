@@ -13,16 +13,17 @@ import (
 	"github.com/wishabi/kafka.go/avro"
 
 	schema "github.com/DeeChau/kafka.go-generic/internal/schema"
+	genericschema "github.com/DeeChau/kafka.go-generic/internal/genericschema"
 )
 
 // This likely can be shared. It is just an avro consumer.
-type AvroConsumer[K, V schema.AvroSchemaConstraint, PTK schema.AvroSchemaStruct[K], PTV schema.AvroSchemaStruct[V]] struct {
+type AvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	reader   *kafka.Reader
 	registry *avro.Registry
 	topic    string
 }
 
-type KafkaMessage[K, V schema.AvroSchemaConstraint] struct {
+type KafkaMessage[K, V genericschema.AvroSchemaConstraint] struct {
 	Topic     string
 	Partition int
 	Offset    int64
@@ -32,8 +33,8 @@ type KafkaMessage[K, V schema.AvroSchemaConstraint] struct {
 	Time      time.Time
 }
 
-func parseKafkaMessage[K, V schema.AvroSchemaConstraint,
-					   PTK schema.AvroSchemaStruct[K], PTV schema.AvroSchemaStruct[V]](
+func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
+					   PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 		message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V], error) {
 
 	valueData, valueSchemaID, err := avro.Parse(message.Value)
@@ -54,7 +55,7 @@ func parseKafkaMessage[K, V schema.AvroSchemaConstraint,
 
 
 		log.Printf("Registry found schema: %s", valueSchema)
-		value, err = schema.DeserializeFromSchema[V, PTV](bytes.NewReader(valueData), valueSchema)
+		value, err = genericschemaDeserializeFromSchema[V, PTV](bytes.NewReader(valueData), valueSchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka  message: %w", err)
 		}
@@ -77,7 +78,7 @@ func parseKafkaMessage[K, V schema.AvroSchemaConstraint,
 		keySchema, err := registry.Schema(keySchemaID)
 
 		// Flag
-		key, err = schema.DeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
+		key, err = genericschemaDeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka Key message: %w", err)
 		}		
@@ -131,7 +132,7 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 }
 
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
-func NewAvroConsumer[K, V schema.AvroSchemaConstraint, PTK schema.AvroSchemaStruct[K], PTV schema.AvroSchemaStruct[V]](
+func NewAvroConsumer[K, V genericschemaAvroSchemaConstraint, PTK genericschemaAvroSchemaStruct[K], PTV genericschemaAvroSchemaStruct[V]](
 		config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
 	return &AvroConsumer[K, V, PTK, PTV]{
 		reader:   kafka.NewReader(config),
