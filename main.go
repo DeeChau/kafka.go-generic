@@ -28,7 +28,7 @@ func main() {
 	useGenerics := len(os.Args) >= 2 && (os.Args[1] == "generic")
 
 	if useGenerics {
-		experimentWithGenerics()
+		// experimentWithGenerics()
 		consumeWithGenerics()
 	} else {
 		publishAndConsumeNoGenerics()
