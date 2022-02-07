@@ -10,10 +10,14 @@ import (
 	schema "github.com/DeeChau/kafka.go-generic/internal/schema"
 )
 
+// Extractable into another class via. generation! -> 
+// TODO: Have a config file as code -> Look into how this is done in other Go Apps.
+// Generate schema classes (ohoho) based on the config -> Consumer/Producer.
 type AvroSchemaConstraint interface {
 	schema.Fsa | schema.FsaKey | schema.State | schema.StateKey
 }
 
+// This is needed
 type AvroSchemaStruct[S any] interface {
 	Serialize(w io.Writer) error
 	Schema() string
@@ -37,6 +41,7 @@ type AvroSchemaStruct[S any] interface {
 }
 
 // Schema SerDe
+// TODO: -> Add unit tests!
 func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, schema string) (*S, error) {
 	t := PT(NewSchemaStruct[S]())
 

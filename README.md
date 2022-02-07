@@ -1,6 +1,21 @@
 # kafka.go-generic
 Experiments using Go 1.18beta1's Generic typings and the Segmentio kafka-go consumer client
 
+## Progress
+### 01-28-2022
+* Successfully adapted generated code from `kafka.go` to use Generics
+  * Created `generic_schema.go` and `generic_consumer.go` which aims to unify the duplication of code and streamline the process for creating new consumers.
+* Created demo-code in `main.go`
+## Next Steps
+### 02-07-2022
+* Extrace demo-code from `main.go` to a subfolder dedicated for examples (faux unit-tests)
+* Better document steps in code where generics are applied
+* Add unit tests where available
+* Create `generic_producer.go` which applies `generics` to the producer interface
+* Look into alternative patterns to utilize a consumer, e.g. having it poll Kafka for messages (on a loop) -> See https://github.com/wishabi/kafka-etl/blob/main/stream/processor.go for an example.
+  * Can also look at how phobos/deimos does kafka consumption for inspiration, would like a more seamless interaction w./ kafka & libraries
+  * Look at other PubSub interfaces and how they're exposed.
+
 ## Get Started
 1. Install go beta with generics - more found here: https://go.dev/doc/tutorial/generics
 2. Install kafka.go
@@ -13,10 +28,16 @@ GOPRIVATE=github.com/wishabi go install github.com/wishabi/kafka.go/cmd/kgo@late
 GOPRIVATE=github.com/wishabi go mod tidy
 GOPRIVATE=github.com/DeeChau go mod tidy
 ```
-5. Run the app
+5. Demo - Run the app
+```bash
+# Without using generics
+go run .
+# With using generics
+go run . generics
+```
 
 
-# kgo commands
+## `kgo` commands used
 #### Schemas
 ```bash
 kgo schema avro \

@@ -15,7 +15,7 @@ import (
 	genericschema "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
 )
 
-// This likely can be shared. It is just an avro consumer.
+// This type is sharable with others.
 type AvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	reader   *kafka.Reader
 	registry *avro.Registry
@@ -32,6 +32,8 @@ type KafkaMessage[K, V genericschema.AvroSchemaConstraint] struct {
 	Time      time.Time
 }
 
+// TODO: -> Add unit tests!
+// Create helpers
 func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 					   PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 		message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V], error) {
@@ -96,6 +98,8 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 	}, nil
 }
 
+// TODO: Implement Batch consume too!
+// Unit Tests -> How do we mock out the Kafka Consumer/Producer? Does such a library even exist?
 // Consume consumes the next message and returns KafkaMessage, commit function and an error
 // The caller of this call is responsible to call the commit.
 // Note: this method is a blocking call and can be cancled by passing timeout or deadline context
@@ -130,6 +134,7 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 	return msg, commit(ctx)
 }
 
+// This can likely be extracted into another file... Will need to ask Go Experts on how the package layout should/could be
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
 func NewAvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 		config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
