@@ -110,12 +110,12 @@ func ExperimentWithGenerics() {
 // With this pattern, we can use this as a building block to define constraints on what a Avro Key or Value should be
 // - and have it generated to redude duplication of code.
 // "Hack"(?) that allows us to call methods
-func printAvroKey[K any, PT genericschema.AvroSchemaStruct[K]](key K) {
+func printAvroKey[K genericschema.AvroSchemaConstraint, PT genericschema.AvroSchemaStruct[K]](key K) {
 	fmt.Printf("%T Key: %v\n", key, key)
 	fmt.Printf("Key Schema: %s\n\n", PT(&key).Schema())
 }
 
-func printAvroValue[V any, PT genericschema.AvroSchemaStruct[V]](value V) {
+func printAvroValue[V genericschema.AvroSchemaConstraint, PT genericschema.AvroSchemaStruct[V]](value V) {
 	fmt.Printf("%T Value %v\n", value, value)
 	fmt.Printf("Value Schema: %s\n\n", PT(&value).Schema())
 }

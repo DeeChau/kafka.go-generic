@@ -44,23 +44,21 @@ type AvroSchemaStruct[S any] interface {
 
 // Schema SerDe
 // TODO: -> Add unit tests!
-func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, schema string) (*PT, error) {
-	// t := NewSchemaStruct[S, PT]()
-	t := new(PT)
-	log.Printf("Consumer created new schema struct: %s", *t)
-	deser, err := compiler.CompileSchemaBytes([]byte(schema), []byte((*t).Schema()))
+func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (*PT, error) {
+	t := NewSchemaStruct[S, PT]()
+	// t := PT(new(S))
+	deser, err := compiler.CompileSchemaBytes([]byte(avroSchema), []byte(t.Schema()))
 	if err != nil {
 		return nil, err
 	}
-	// log.Printf("Consumer found deserializer: %s", deser)
-	err = vm.Eval(r, deser, *t)
+	err = vm.Eval(r, deser, t)
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Consumer deserialized message: %s", t)
-	return t, err
+	log.Printf("Consumer deserialized %T message: %s", t, t)
+	return &t, err
 }
 
-// func NewSchemaStruct[S AvroSchemaConstraint, PT AvroSchemaStruct[S]]() *PT {
-// 	return new(PT)
-// }
+func NewSchemaStruct[S AvroSchemaConstraint, PT AvroSchemaStruct[S]]() PT {
+	return PT(new(S))
+}

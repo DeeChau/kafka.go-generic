@@ -41,6 +41,12 @@ go run . generics
 ## VS Code setup
 https://github.com/golang/vscode-go/blob/master/docs/advanced.md#using-go118
 
+## Additional Resources
+- https://go.dev/doc/tutorial/generics
+- https://go.dev/blog/go1.18beta2
+- https://stackoverflow.com/questions/69573113/how-can-i-instantiate-a-new-pointer-of-type-argument-with-generic-go
+- https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md#pointer-method-example
+
 ## `kgo` commands used
 #### Schemas
 ```bash
