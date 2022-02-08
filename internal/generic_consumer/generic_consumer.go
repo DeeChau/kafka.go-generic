@@ -27,8 +27,8 @@ type KafkaMessage[K, V genericschema.AvroSchemaConstraint, PTK genericschema.Avr
 	Topic     string
 	Partition int
 	Offset    int64
-	Key       *PTK
-	Value     *PTV
+	Key       PTK
+	Value     PTV
 	Headers   []kafka.Header
 	Time      time.Time
 }
@@ -46,7 +46,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 
 	log.Printf("Consumer parsed avro message: %s", valueData)
 
-	var value *PTV
+	var value PTV
 
 	log.Printf("Consumer parsed value: %v - %s - %T", value, value, value)
 
@@ -69,7 +69,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 		return nil, fmt.Errorf("can't parse Kafka Key: %w", err)
 	}
 
-	var key *PTK
+	var key PTK
 
 	// if key is tombstone message, the error will be avro.ErrEmpty
 	// if it's not tombstone message, then we need to parse the key
@@ -105,7 +105,6 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 // Note: this method is a blocking call and can be cancled by passing timeout or deadline context
 func (c *AvroConsumer[K, V, PTK, PTV]) Consume(ctx context.Context) (*KafkaMessage[K, V, PTK, PTV], func(context.Context) error, error) {
 	message, err := c.reader.FetchMessage(ctx)
-	log.Info().Msgf("Consumer received unparsed message: %s", message)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read Kafka message: %w", err)
 	}

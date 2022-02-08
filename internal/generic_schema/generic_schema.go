@@ -14,12 +14,12 @@ import (
 
 // Extractable into another class via. generation! ->
 // TODO: Have a config file as code -> Look into how this is done in other Go Apps.
-// Generate schema classes (ohoho) based on the config -> Consumer/Producer.
+// Generate schema classes based on the config -> Consumer/Producer.
+
 type AvroSchemaConstraint interface {
 	schema.Fsa | schema.FsaKey | schema.State | schema.StateKey
 }
 
-// This is needed
 type AvroSchemaStruct[S any] interface {
 	Serialize(w io.Writer) error
 	Schema() string
@@ -42,11 +42,9 @@ type AvroSchemaStruct[S any] interface {
 	*S
 }
 
-// Schema SerDe
-// TODO: -> Add unit tests!
-func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (*PT, error) {
+// Schema Serde
+func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (PT, error) {
 	t := NewSchemaStruct[S, PT]()
-	// t := PT(new(S))
 	deser, err := compiler.CompileSchemaBytes([]byte(avroSchema), []byte(t.Schema()))
 	if err != nil {
 		return nil, err
@@ -56,7 +54,7 @@ func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.
 		return nil, err
 	}
 	log.Printf("Consumer deserialized %T message: %s", t, t)
-	return &t, err
+	return t, err
 }
 
 func NewSchemaStruct[S AvroSchemaConstraint, PT AvroSchemaStruct[S]]() PT {
