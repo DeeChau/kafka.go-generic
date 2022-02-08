@@ -10,7 +10,7 @@ import (
 	"github.com/DeeChau/kafka.go-generic/internal/schema"
 	"github.com/DeeChau/kafka.go-generic/internal/generic_consumer"
 	genericschema "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
-	"github.com/DeeChau/kafka.go-generic/demo"
+	demo"github.com/DeeChau/kafka.go-generic/internal/demo"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -30,7 +30,7 @@ func main() {
 		// experimentWithGenerics()
 		consumeWithGenerics()
 	} else {
-		PublishAndConsumeNoGenerics()
+		demo.PublishAndConsumeNoGenerics()
 	}
 }
 
