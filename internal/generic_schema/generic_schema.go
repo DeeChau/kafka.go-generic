@@ -2,15 +2,17 @@
 package generic_schema
 
 import (
+	"io"
+	"log"
+
 	"github.com/actgardner/gogen-avro/v7/compiler"
 	"github.com/actgardner/gogen-avro/v7/vm"
 	"github.com/actgardner/gogen-avro/v7/vm/types"
-	"io"
 
 	schema "github.com/DeeChau/kafka.go-generic/internal/schema"
 )
 
-// Extractable into another class via. generation! -> 
+// Extractable into another class via. generation! ->
 // TODO: Have a config file as code -> Look into how this is done in other Go Apps.
 // Generate schema classes (ohoho) based on the config -> Consumer/Producer.
 type AvroSchemaConstraint interface {
@@ -31,8 +33,8 @@ type AvroSchemaStruct[S any] interface {
 	SetBytes(v []byte)
 	SetString(v string)
 	SetUnionElem(v int64)
-	AppendMap(key string) types.Field 
-	AppendArray() types.Field 
+	AppendMap(key string) types.Field
+	AppendArray() types.Field
 	Finalize()
 	AvroCRC64Fingerprint() []byte
 	SetDefault(i int)
@@ -42,21 +44,21 @@ type AvroSchemaStruct[S any] interface {
 
 // Schema SerDe
 // TODO: -> Add unit tests!
-func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, schema string) (*S, error) {
-	t := PT(NewSchemaStruct[S]())
-
-	deser, err := compiler.CompileSchemaBytes([]byte(schema), []byte(t.Schema()))
+func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (*PT, error) {
+	t := NewSchemaStruct[S, PT]()
+	// t := PT(new(S))
+	deser, err := compiler.CompileSchemaBytes([]byte(avroSchema), []byte(t.Schema()))
 	if err != nil {
 		return nil, err
 	}
-
 	err = vm.Eval(r, deser, t)
 	if err != nil {
 		return nil, err
 	}
-	return t, err
+	log.Printf("Consumer deserialized %T message: %s", t, t)
+	return &t, err
 }
 
-func NewSchemaStruct[S any]() *S {
-	return new(S)
+func NewSchemaStruct[S AvroSchemaConstraint, PT AvroSchemaStruct[S]]() PT {
+	return PT(new(S))
 }

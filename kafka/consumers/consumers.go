@@ -11,7 +11,7 @@ func GetFsaConsumer(schemaRegistry *avro.Registry, dialer *kafka.Dialer, kafkaBr
 		Topic:       "Fsa",
 		GroupID:     "TestFsaConsumer",
 		Dialer:      dialer,
-		StartOffset: kafka.LastOffset,
+		StartOffset: kafka.FirstOffset,
 		Brokers: []string{
 			kafkaBrokerUrl,
 		},
@@ -24,7 +24,7 @@ func GetStateConsumer(schemaRegistry *avro.Registry, dialer *kafka.Dialer, kafka
 		Topic:       "Fsa",
 		GroupID:     "TestStateConsumer",
 		Dialer:      dialer,
-		StartOffset: kafka.LastOffset,
+		StartOffset: kafka.FirstOffset,
 		Brokers: []string{
 			kafkaBrokerUrl,
 		},

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
 	"github.com/rs/zerolog/log"
 
 	"github.com/segmentio/kafka-go"
@@ -22,12 +23,12 @@ type AvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.Avr
 	topic    string
 }
 
-type KafkaMessage[K, V genericschema.AvroSchemaConstraint] struct {
+type KafkaMessage[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	Topic     string
 	Partition int
 	Offset    int64
-	Key       *K
-	Value     *V
+	Key       *PTK
+	Value     *PTV
 	Headers   []kafka.Header
 	Time      time.Time
 }
@@ -35,8 +36,8 @@ type KafkaMessage[K, V genericschema.AvroSchemaConstraint] struct {
 // TODO: -> Add unit tests!
 // Create helpers
 func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
-					   PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
-		message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V], error) {
+	PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
+	message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V, PTK, PTV], error) {
 
 	valueData, valueSchemaID, err := avro.Parse(message.Value)
 	if err != nil && !errors.Is(err, avro.ErrEmpty) {
@@ -45,7 +46,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 
 	log.Printf("Consumer parsed avro message: %s", valueData)
 
-	var value *V
+	var value *PTV
 
 	log.Printf("Consumer parsed value: %v - %s - %T", value, value, value)
 
@@ -54,11 +55,10 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 	if !errors.Is(err, avro.ErrEmpty) {
 		valueSchema, err := registry.Schema(valueSchemaID)
 
-
-		log.Printf("Registry found schema: %s", valueSchema)
+		// log.Printf("Registry found schema: %s", valueSchema)
 		value, err = genericschema.DeserializeFromSchema[V, PTV](bytes.NewReader(valueData), valueSchema)
 		if err != nil {
-			return nil, fmt.Errorf("failed to deserialize Kafka  message: %w", err)
+			return nil, fmt.Errorf("failed to deserialize Kafka message: %w", err)
 		}
 	}
 
@@ -69,7 +69,7 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 		return nil, fmt.Errorf("can't parse Kafka Key: %w", err)
 	}
 
-	var key *K
+	var key *PTK
 
 	// if key is tombstone message, the error will be avro.ErrEmpty
 	// if it's not tombstone message, then we need to parse the key
@@ -82,12 +82,12 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 		key, err = genericschema.DeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka Key message: %w", err)
-		}		
+		}
 	}
 
 	log.Printf("Consumer parsed key: %s", key)
 
-	return &KafkaMessage[K, V]{
+	return &KafkaMessage[K, V, PTK, PTV]{
 		Topic:     message.Topic,
 		Partition: message.Partition,
 		Offset:    message.Offset,
@@ -103,8 +103,9 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 // Consume consumes the next message and returns KafkaMessage, commit function and an error
 // The caller of this call is responsible to call the commit.
 // Note: this method is a blocking call and can be cancled by passing timeout or deadline context
-func (c *AvroConsumer[K, V, PTK, PTV]) Consume(ctx context.Context)(*KafkaMessage[K, V], func(context.Context) error, error) {
+func (c *AvroConsumer[K, V, PTK, PTV]) Consume(ctx context.Context) (*KafkaMessage[K, V, PTK, PTV], func(context.Context) error, error) {
 	message, err := c.reader.FetchMessage(ctx)
+	log.Info().Msgf("Consumer received unparsed message: %s", message)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read Kafka message: %w", err)
 	}
@@ -118,14 +119,14 @@ func (c *AvroConsumer[K, V, PTK, PTV]) Consume(ctx context.Context)(*KafkaMessag
 		return nil, commit, err
 	}
 
-	log.Printf("Consumer parsed messages: %s", msg)
+	log.Info().Msgf("Consumer parsed messages: %s", msg)
 
 	return msg, commit, nil
 }
 
 // // AutoCommitConsume consumes the next message and returns KafkaMessage and automatically calls commit
 // // by passing a timeout context, ones can control timeout of consuming and commiting a message
-func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*KafkaMessage[K, V], error) {
+func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*KafkaMessage[K, V, PTK, PTV], error) {
 	msg, commit, err := c.Consume(ctx)
 	if err != nil {
 		return nil, err
@@ -137,7 +138,7 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 // This can likely be extracted into another file... Will need to ask Go Experts on how the package layout should/could be
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
 func NewAvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
-		config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
+	config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
 	return &AvroConsumer[K, V, PTK, PTV]{
 		reader:   kafka.NewReader(config),
 		registry: registry,
