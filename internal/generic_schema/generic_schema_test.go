@@ -3,18 +3,28 @@ package generic_schema
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/DeeChau/kafka.go-generic/internal/schema"
-	// demo "github.com/DeeChau/kafka.go-generic/internal/demo"
 )
+
+// Useful helper to serialize a Schema Object to Bytes
+func serializeSchemaObjToBytes[T AvroSchemaConstraint, KT AvroSchemaStruct[T]](schemaObj *T) ([]uint8, error) {
+	objBuffer := bytes.NewBuffer([]byte{})
+	err := KT(schemaObj).Serialize(objBuffer)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write %T, %v to buffer: %w", schemaObj, schemaObj, err)
+	}
+	return objBuffer.Bytes(), nil
+}
 
 // Example test for this function - Relies on topics to be created and local kafka to be running (Technicall Integration test)
 func TestNewSchemaStruct(t *testing.T) {
 	fsa := NewSchemaStruct[schema.Fsa]()
-	expected_fsa := schema.Fsa{}
-	if expected_fsa != *fsa {
-		t.Fatalf(`NewSchemaStruct[schema.Fsa]() = %v, want match for %v`, fsa, expected_fsa)
+	expectedFsa := schema.Fsa{}
+	if expectedFsa != *fsa {
+		t.Fatalf(`NewSchemaStruct[schema.Fsa]() = %v, want match for %v`, fsa, expectedFsa)
 	}
 
 	state := NewSchemaStruct[schema.State]()
@@ -25,10 +35,8 @@ func TestNewSchemaStruct(t *testing.T) {
 }
 
 func TestDeserialzeFsas(t *testing.T) {
-	// Need helper for creating valueData byte array, possibly utilize similar Producer code that converts a message to bytes
-	valueData := []uint8{6, 77, 53, 86, 102, 230, 246, 66, 102, 230, 246, 66, 16, 84, 69, 83, 84, 45, 70, 83, 65, 192, 132, 61, 192, 132, 61, 50, 50, 48, 50, 50, 45, 48, 50, 45, 48, 56, 32, 49, 54, 58, 48, 48, 58, 48, 48, 32, 45, 48, 53, 48, 48}
-	mockReader := bytes.NewReader(valueData)
-	expected_fsa := &schema.Fsa{
+	var err error
+	expectedFsa := schema.Fsa{
 		Label:      "M5V",
 		Latitude:   123.45,
 		Longitude:  123.45,
@@ -37,13 +45,18 @@ func TestDeserialzeFsas(t *testing.T) {
 		Updated_at: int64(500_000),
 		Timestamp:  "2022-02-08 16:00:00 -0500",
 	}
+	valueData, err := serializeSchemaObjToBytes(&expectedFsa)
+	mockReader := bytes.NewReader(valueData)
+	avroSchema := expectedFsa.Schema()
 
-	avro_schema := expected_fsa.Schema()
-	var err error
-	new_fsa, err := DeserializeFromSchema[schema.Fsa](mockReader, avro_schema)
+	if err != nil {
+		t.Fatalf(`serializeSchemaObjToBytes("Fsa-value", %v) = %v, %v`, expectedFsa, valueData, err)
+	}
 
-	if *expected_fsa != *new_fsa || err != nil {
-		t.Fatalf(`DeserializeFromSchema[schema.Fsa]() = %v, %v, want match for %v`, *new_fsa, err, expected_fsa)
+	new_fsa, err := DeserializeFromSchema[schema.Fsa](mockReader, avroSchema)
+
+	if expectedFsa != *new_fsa || err != nil {
+		t.Fatalf(`DeserializeFromSchema[schema.Fsa]() = %v, %v, want match for %v`, *new_fsa, err, expectedFsa)
 	}
 
 }
