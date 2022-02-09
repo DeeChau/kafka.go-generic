@@ -25,7 +25,7 @@ func TestNewSchemaStruct(t *testing.T) {
 }
 
 func TestDeserialzeFsas(t *testing.T) {
-	// Need helper for creating valueData byte array :|
+	// Need helper for creating valueData byte array, possibly utilize similar Producer code that converts a message to bytes
 	valueData := []uint8{6, 77, 53, 86, 102, 230, 246, 66, 102, 230, 246, 66, 16, 84, 69, 83, 84, 45, 70, 83, 65, 192, 132, 61, 192, 132, 61, 50, 50, 48, 50, 50, 45, 48, 50, 45, 48, 56, 32, 49, 54, 58, 48, 48, 58, 48, 48, 32, 45, 48, 53, 48, 48}
 	mockReader := bytes.NewReader(valueData)
 	expected_fsa := &schema.Fsa{

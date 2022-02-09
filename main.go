@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("---Begin Hackathon for Generic Kafka experimentation---")
+	fmt.Println("---Start Hackathon for Generic Kafka experimentation---")
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	useGenerics := len(os.Args) >= 2 && (os.Args[1] == "generic")
 

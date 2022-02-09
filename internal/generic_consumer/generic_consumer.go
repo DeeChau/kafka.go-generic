@@ -33,8 +33,7 @@ type KafkaMessage[K, V genericschema.AvroSchemaConstraint, PTK genericschema.Avr
 	Time      time.Time
 }
 
-// TODO: -> Add unit tests!
-// Create helpers
+// Generic helper for parsing Kafka Messages
 func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 	PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 	message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V, PTK, PTV], error) {
@@ -78,7 +77,6 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 	if !errors.Is(err, avro.ErrEmpty) {
 		keySchema, err := registry.Schema(keySchemaID)
 
-		// Flag
 		key, err = genericschema.DeserializeFromSchema[K, PTK](bytes.NewReader(keyData), keySchema)
 		if err != nil {
 			return nil, fmt.Errorf("failed to deserialize Kafka Key message: %w", err)
@@ -98,8 +96,6 @@ func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
 	}, nil
 }
 
-// TODO: Implement Batch consume too!
-// Unit Tests -> How do we mock out the Kafka Consumer/Producer? Does such a library even exist?
 // Consume consumes the next message and returns KafkaMessage, commit function and an error
 // The caller of this call is responsible to call the commit.
 // Note: this method is a blocking call and can be cancled by passing timeout or deadline context
@@ -123,6 +119,39 @@ func (c *AvroConsumer[K, V, PTK, PTV]) Consume(ctx context.Context) (*KafkaMessa
 	return msg, commit, nil
 }
 
+// Consumes returns batch of messages. There are 3 arguments that might effect the number of return results
+// 1: context with timeout, deadline or canceled
+// 2: the maximum number of messages
+// 3: the configured min and max size of consumer which pass by kafka.ReaderConfig
+func (c *AvroConsumer[K, V, PTK, PTV]) Consumes(ctx context.Context, max int) ([]*KafkaMessage[K, V, PTK, PTV], func(ctx context.Context) error, error) {
+	raw := make([]kafka.Message, 0)
+	result := make([]*KafkaMessage[K, V, PTK, PTV], 0)
+
+	commit := func(ctx context.Context) error {
+		return c.reader.CommitMessages(ctx, raw...)
+	}
+
+	for i := 0; i < max; i++ {
+		select {
+		case <-ctx.Done():
+			break
+		default:
+			msg, err := c.reader.FetchMessage(ctx)
+			if err != nil {
+				return nil, commit, err
+			}
+			raw = append(raw, msg)
+			message, err := parseKafkaMessage[K, V, PTK, PTV](msg, c.registry)
+			if err != nil {
+				return nil, commit, err
+			}
+			result = append(result, message)
+		}
+	}
+
+	return result, commit, nil
+}
+
 // // AutoCommitConsume consumes the next message and returns KafkaMessage and automatically calls commit
 // // by passing a timeout context, ones can control timeout of consuming and commiting a message
 func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*KafkaMessage[K, V, PTK, PTV], error) {
@@ -134,7 +163,6 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 	return msg, commit(ctx)
 }
 
-// This can likely be extracted into another file... Will need to ask Go Experts on how the package layout should/could be
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
 func NewAvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 	config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {

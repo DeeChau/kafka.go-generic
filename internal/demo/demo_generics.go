@@ -21,7 +21,6 @@ import (
 // Using generics
 func ConsumeWithGenerics() (bool, error) {
 	fmt.Println("---Using Generic Kafka Consumers---")
-	// Begin Kafka code here
 	dialer, dialerErr := kafkaUtil.Dialer()
 
 	if dialerErr != nil {
@@ -83,8 +82,8 @@ func ConsumeWithGenerics() (bool, error) {
 func ProduceWithGenerics() (bool, error) {
 	fmt.Println("---Using Generic Kafka Producers---")
 
+	// fsa producer code
 	dialer, dialerErr := kafkaUtil.Dialer()
-
 	if dialerErr != nil {
 		log.Error().Msg("Error getting kafka dialer.")
 		return false, dialerErr
@@ -120,7 +119,7 @@ func ProduceWithGenerics() (bool, error) {
 	return true, nil
 }
 
-// Begin Experimental work with generics
+// Experimental work with generics
 func ExperimentWithGenerics() {
 	fmt.Println("---Experimenting with Generic Types and Methods---")
 	timestamp := time.Now()

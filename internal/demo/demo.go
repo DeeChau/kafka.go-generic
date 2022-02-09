@@ -43,8 +43,6 @@ func PublishAndConsumeNoGenerics() {
 }
 
 // Consumer code.
-// Currently not being run with too much - in the future we need to
-// investigate a platform for this to run within a GoRoutine.
 func consumeFsas() (bool, error) {
 	log.Info().Msg("Create consumers")
 
@@ -125,14 +123,7 @@ func publishState(abbreviation, name string) (bool, error) {
 	return true, nil
 }
 
-/* Notes
-Implementation & Use 	- These should probably be abstracted and made easier - it should be possible within the producer's library.
-Linting 			 	- These keys should be standardized with Camel Case or snake case - not both.
-Implementation & Use 	- Utilize Type Switch to take in a Schema Type -> Translate to the Configured Kafka Topic ID - PENDING on discussions from golang maintainers
-Implementation & Use 	- Share one registry across? Is that a good idea.
-Implementation & Use 	- Utilize Generics
-*/
-// - Begin FSA Producer helper code - //
+// - FSA Producer helper code - //
 func generateFsaKey(fsa string) schema.FsaKey {
 	return schema.FsaKey{Label: fsa}
 }
@@ -162,7 +153,7 @@ func produceFsaMessage(dialer *kafka.Dialer, key *schema.FsaKey, payload *schema
 		payload)
 }
 
-// - Begin State Producer helper code - //
+// - State Producer helper code - //
 func generateStateKey(abbreviation string) schema.StateKey {
 	return schema.StateKey{Abbreviation: abbreviation}
 }
