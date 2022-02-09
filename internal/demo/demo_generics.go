@@ -7,6 +7,7 @@ import (
 	"time"
 
 	genericconsumers "github.com/DeeChau/kafka.go-generic/internal/generic_consumer"
+	genericproducers "github.com/DeeChau/kafka.go-generic/internal/generic_producer"
 	genericschema "github.com/DeeChau/kafka.go-generic/internal/generic_schema"
 	"github.com/DeeChau/kafka.go-generic/internal/schema"
 
@@ -79,6 +80,47 @@ func ConsumeWithGenerics() (bool, error) {
 	return true, nil
 }
 
+func ProduceWithGenerics() (bool, error) {
+	fmt.Println("---Using Generic Kafka Producers---")
+
+	dialer, dialerErr := kafkaUtil.Dialer()
+
+	if dialerErr != nil {
+		log.Error().Msg("Error getting kafka dialer.")
+		return false, dialerErr
+	}
+
+	fsa := "M6G"
+	lat := float32(88.88)
+	long := float32(99.99)
+	key := generateFsaKey(fsa)
+	payload := generateFsa(fsa, lat, long)
+
+	log.Info().Msgf("Key to send %v, Message to send %v", key, payload)
+	log.Printf("Schema Registry location %v, Kafka Broker location %v", env.SchemaRegistry, env.BrokersList)
+
+	schemaRegistry := avro.NewRegistry(env.SchemaRegistry, &http.Client{})
+
+	fsaProducer := genericproducers.NewAvroProducer[schema.FsaKey, schema.Fsa](kafka.WriterConfig{
+		Topic:   "Fsa",
+		Dialer:  dialer,
+		Brokers: env.BrokersList,
+	}, schemaRegistry)
+
+	err := fsaProducer.Produce(
+		context.Background(),
+		&key,
+		&payload)
+	if err != nil {
+		log.Error().Err(err).Msg("Kafka message could not be sent. Error producing message.")
+		return false, err
+	}
+
+	log.Info().Msg("FSA kafka message sent successfully.")
+	return true, nil
+}
+
+// Begin Experimental work with generics
 func ExperimentWithGenerics() {
 	fmt.Println("---Experimenting with Generic Types and Methods---")
 	timestamp := time.Now()
@@ -107,9 +149,8 @@ func ExperimentWithGenerics() {
 	printAvroValue(state_value)
 }
 
-// With this pattern, we can use this as a building block to define constraints on what a Avro Key or Value should be
-// - and have it generated to redude duplication of code.
-// "Hack"(?) that allows us to call methods
+// With this pattern, we can use this as a building block to define constraint types for our Avro Key or Values
+// and reduce duplication of code. Not sure if this is a "Hack" that allows us to call methods.
 func printAvroKey[K genericschema.AvroSchemaConstraint, PT genericschema.AvroSchemaStruct[K]](key K) {
 	fmt.Printf("%T Key: %v\n", key, key)
 	fmt.Printf("Key Schema: %s\n\n", PT(&key).Schema())

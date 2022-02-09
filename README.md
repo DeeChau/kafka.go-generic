@@ -8,7 +8,7 @@ Experiments using Go 1.18beta1's Generic typings and the Segmentio kafka-go cons
 * Created demo-code in `main.go`
 ## Next Steps
 ### 02-07-2022
-* Extrace demo-code from `main.go` to a subfolder dedicated for examples (faux unit-tests)
+* Extract demo-code from `main.go` to subfolders dedicated for examples and unit-tests
 * Better document steps in code where generics are applied
 * Add unit tests where available
   * Schema, Avro, Producer & Consumer
@@ -16,7 +16,7 @@ Experiments using Go 1.18beta1's Generic typings and the Segmentio kafka-go cons
 * Look into alternative patterns to utilize a consumer, e.g. having it poll Kafka for messages (on a loop) -> See https://github.com/wishabi/kafka-etl/blob/main/stream/processor.go for an example.
   * Can also look at how phobos/deimos does kafka consumption for inspiration, would like a more seamless interaction w./ kafka & libraries
   * Look at other PubSub interfaces and how they're exposed.
-  * Maybe function pointers if that's an interesting paradigm?
+  * Possibly function pointers if that's an interesting paradigm?
 
 ## Get Started
 1. Install go beta with generics - more found here: https://go.dev/doc/tutorial/generics and here https://go.dev/blog/go1.18beta2
