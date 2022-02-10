@@ -42,7 +42,90 @@ go run .
 go run . generics
 ```
 
-## VS Code setup
+## Setting up Generic Producers/Consumers
+### Pre-requisites
+Before getting started with using Generic producers/consumers in your app, make sure you install the latest version of Go 1.18. Currently, 1.18 is in Beta (`1.18beta2`) but will be released sometime in Feb 2022.
+
+Once done, you should use `kgo` to generate schema packages that are the types for your avro schemas keys and values.
+
+After that is done, you should be good to start with using generics!
+### Generic Consumers
+```go
+// Initialize Schema Registry
+schemaRegistry := avro.NewRegistry(env.SchemaRegistry, &http.Client{})
+// Setup Dialer
+dialer, dialerErr := kafkaUtil.Dialer()
+
+if dialerErr != nil {
+  log.Error().Msg("Error getting kafka dialer.")
+  return false, dialerErr
+}
+
+// fsa Consumer code
+fsaConsumer := genericconsumers.NewAvroConsumer[schema.FsaKey, schema.Fsa](
+  kafka.ReaderConfig{
+    Topic:   "Fsa",
+    GroupID: "TestConsumerGenerics",
+    Dialer:  dialer,
+    Brokers: env.BrokersList,
+  }, schemaRegistry)
+
+ctx := context.Background()
+fsaMsg, fsaErr := fsaConsumer.AutoCommitConsume(ctx)
+if fsaErr != nil {
+  log.Error().Err(fsaErr).Msg("Kafka message could not be received. Error consuming message.")
+  return false, fsaErr
+}
+
+fsaKey := fsaMsg.Key
+fsaValue := fsaMsg.Value
+```
+
+### Generic Producers
+```go
+// Initialize Schema Registry
+schemaRegistry := avro.NewRegistry(env.SchemaRegistry, &http.Client{})
+// Setup Dialer
+dialer, dialerErr := kafkaUtil.Dialer()
+if dialerErr != nil {
+  log.Error().Msg("Error getting kafka dialer.")
+  return false, dialerErr
+}
+
+fsa := "M6G"
+lat := float32(88.88)
+long := float32(99.99)
+key := schema.FsaKey{Label: fsa}
+payload := schema.Fsa{
+  Label:      fsa,
+  Latitude:   lat,
+  Longitude:  long,
+  Message_id: fmt.Sprintf("FSA-%v", timestamp),
+  Created_at: timestamp.Unix(),
+  Updated_at: timestamp.Unix(),
+  Timestamp:  timestamp.Format(time.UnixDate),
+}
+
+// Fsa producer code
+fsaProducer := genericproducers.NewAvroProducer[schema.FsaKey, schema.Fsa](
+  kafka.WriterConfig{
+    Topic:   "Fsa",
+    Dialer:  dialer,
+    Brokers: env.BrokersList,
+  }, schemaRegistry
+)
+
+err := fsaProducer.Produce(
+  context.Background(),
+  &key,
+  &payload)
+if err != nil {
+  log.Error().Err(err).Msg("Kafka message could not be sent. Error producing message.")
+  return false, err
+}
+```
+
+## Additional setup for using VS Code for development
 https://github.com/golang/vscode-go/blob/master/docs/advanced.md#using-go118
 
 ## Additional Resources
