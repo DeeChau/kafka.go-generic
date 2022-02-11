@@ -17,3 +17,5 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 )
+
+replace github.com/wishabi/kafka.go => github.com/DeeChau/kafka.go v0.1.0-alpha
