@@ -12,7 +12,7 @@ import (
 )
 
 // AvroProducer kafka producer for the Schema Type Fsa
-type AvroProducer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
+type AvroProducer[K, V any, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	writer   *kafka.Writer
 	registry *avro.Registry
 	topic    string
@@ -55,7 +55,7 @@ func (p *AvroProducer[K, V, PTK, PTV]) Produce(ctx context.Context, key *K, valu
 }
 
 // NewAvroProducer creates a generic producer for sending a message.
-func NewAvroProducer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
+func NewAvroProducer[K, V any, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 	config kafka.WriterConfig, registry *avro.Registry) *AvroProducer[K, V, PTK, PTV] {
 	return &AvroProducer[K, V, PTK, PTV]{
 		writer:   kafka.NewWriter(config),

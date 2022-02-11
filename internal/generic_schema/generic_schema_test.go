@@ -10,7 +10,7 @@ import (
 )
 
 // Useful helper to serialize a Schema Object to Bytes
-func serializeSchemaObjToBytes[T AvroSchemaConstraint, KT AvroSchemaStruct[T]](schemaObj *T) ([]uint8, error) {
+func serializeSchemaObjToBytes[T any, KT AvroSchemaStruct[T]](schemaObj *T) ([]uint8, error) {
 	objBuffer := bytes.NewBuffer([]byte{})
 	err := KT(schemaObj).Serialize(objBuffer)
 	if err != nil {

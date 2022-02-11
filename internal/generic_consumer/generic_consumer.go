@@ -17,13 +17,13 @@ import (
 )
 
 // This type is sharable with others.
-type AvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
+type AvroConsumer[K, V any, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	reader   *kafka.Reader
 	registry *avro.Registry
 	topic    string
 }
 
-type KafkaMessage[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
+type KafkaMessage[K, V any, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]] struct {
 	Topic     string
 	Partition int
 	Offset    int64
@@ -34,7 +34,7 @@ type KafkaMessage[K, V genericschema.AvroSchemaConstraint, PTK genericschema.Avr
 }
 
 // Generic helper for parsing Kafka Messages
-func parseKafkaMessage[K, V genericschema.AvroSchemaConstraint,
+func parseKafkaMessage[K, V any,
 	PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 	message kafka.Message, registry *avro.Registry) (*KafkaMessage[K, V, PTK, PTV], error) {
 
@@ -164,7 +164,7 @@ func (c *AvroConsumer[K, V, PTK, PTV]) AutoCommitConsume(ctx context.Context) (*
 }
 
 // NewAvroKafka Consumer creates a consumer which can consume and returns Kafka Message messages
-func NewAvroConsumer[K, V genericschema.AvroSchemaConstraint, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
+func NewAvroConsumer[K, V any, PTK genericschema.AvroSchemaStruct[K], PTV genericschema.AvroSchemaStruct[V]](
 	config kafka.ReaderConfig, registry *avro.Registry) *AvroConsumer[K, V, PTK, PTV] {
 	return &AvroConsumer[K, V, PTK, PTV]{
 		reader:   kafka.NewReader(config),

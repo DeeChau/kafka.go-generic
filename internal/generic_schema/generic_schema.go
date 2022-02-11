@@ -8,17 +8,7 @@ import (
 	"github.com/actgardner/gogen-avro/v7/compiler"
 	"github.com/actgardner/gogen-avro/v7/vm"
 	"github.com/actgardner/gogen-avro/v7/vm/types"
-
-	schema "github.com/DeeChau/kafka.go-generic/internal/schema"
 )
-
-// Extractable into another class via. generation! ->
-// TODO: Have a config file as code -> Look into how this is done in other Go Apps.
-// Generate schema classes based on the config -> Consumer/Producer.
-
-type AvroSchemaConstraint interface {
-	schema.Fsa | schema.FsaKey | schema.State | schema.StateKey
-}
 
 type AvroSchemaStruct[S any] interface {
 	Serialize(w io.Writer) error
@@ -43,7 +33,7 @@ type AvroSchemaStruct[S any] interface {
 }
 
 // Schema Serde
-func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (PT, error) {
+func DeserializeFromSchema[S any, PT AvroSchemaStruct[S]](r io.Reader, avroSchema string) (PT, error) {
 	t := NewSchemaStruct[S, PT]()
 	deser, err := compiler.CompileSchemaBytes([]byte(avroSchema), []byte(t.Schema()))
 	if err != nil {
@@ -57,6 +47,6 @@ func DeserializeFromSchema[S AvroSchemaConstraint, PT AvroSchemaStruct[S]](r io.
 	return t, err
 }
 
-func NewSchemaStruct[S AvroSchemaConstraint, PT AvroSchemaStruct[S]]() PT {
+func NewSchemaStruct[S any, PT AvroSchemaStruct[S]]() PT {
 	return PT(new(S))
 }
