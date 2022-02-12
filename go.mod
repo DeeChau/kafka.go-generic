@@ -18,4 +18,4 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 )
 
-replace github.com/wishabi/kafka.go => github.com/DeeChau/kafka.go v0.1.0-alpha
+replace github.com/wishabi/kafka.go => github.com/DeeChau/kafka.go v0.2.0-alpha
